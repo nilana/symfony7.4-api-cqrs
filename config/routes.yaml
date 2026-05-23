@@ -9,3 +9,13 @@
 
 controllers:
     resource: routing.controllers
+
+api_login:
+    path: /api/v1/login
+    methods: [POST]
+
+api_v1:
+    resource: '../src/Controller/API/V1'
+    type: attribute
+    prefix: /api/v1
+    name_prefix: api_v1_
