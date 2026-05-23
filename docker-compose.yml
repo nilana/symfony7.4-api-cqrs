@@ -6,15 +6,24 @@ services:
         volumes:
             - '.:/app'
         environment:
-            - MYSQL_ROOT_PASSWORD=password
-            - MYSQL_DATABASE=symfony
-            - MYSQL_USER=nilan
-            - MYSQL_PASSWORD=nilan123
+            - MYSQL_ROOT_PASSWORD=${DATABASE_PASSWORD}
+            - MYSQL_DATABASE=${DATABASE_NAME}
+            # - MYSQL_USER=nilan
+            # - MYSQL_PASSWORD=nilan123
         ports:
             - '2502:3306'
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-s", "-p${DATABASE_PASSWORD}"]
+            interval: 5s
+            timeout: 5s
+            retries: 10
+            start_period: 20s
 
     webserver:
         image: 'nginx:alpine'
+        depends_on:
+            php-fpm:
+                condition: service_healthy
         working_dir: /app
         volumes:
             - '.:/app'
@@ -24,8 +33,17 @@ services:
 
     php-fpm:
         build: docker/php-fpm
+        depends_on:
+            mysql:
+                condition: service_healthy
         working_dir: /app
         volumes:
             - '.:/app'
             - './docker/php-fpm/php-ini-overrides.ini:/etc/php/8.5/fpm/conf.d/99-overrides.ini'
             - './docker/php-fpm/php-ini-overrides.ini:/etc/php/8.5/cli/conf.d/99-overrides.ini'
+        healthcheck:
+            test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/9000' || exit 1"]
+            interval: 5s
+            timeout: 5s
+            retries: 10
+            start_period: 300s
