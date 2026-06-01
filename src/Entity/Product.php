@@ -5,10 +5,14 @@ namespace App\Entity;
 use App\Repository\ProductRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\Trait\TimestampableTrait;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Product
 {
+    use TimestampableTrait; 
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

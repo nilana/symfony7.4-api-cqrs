@@ -9,11 +9,15 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use App\Entity\Trait\TimestampableTrait;
 
 #[ORM\Entity(repositoryClass: SellerRepository::class)]
 #[UniqueEntity(fields: ['email'], message: 'This email is already in use.')]
+#[ORM\HasLifecycleCallbacks]
 class Seller implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    use TimestampableTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
