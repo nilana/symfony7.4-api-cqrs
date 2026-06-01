@@ -9,9 +9,12 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class AuthController extends AbstractController
 {
+    public function __construct(private ValidatorInterface $validator) {}
+
     #[Route('/register', name: 'register', methods: ['POST'])]
     public function register(
         Request $request,
@@ -27,6 +30,16 @@ class AuthController extends AbstractController
         $seller->setPassword(
             $hasher->hashPassword($seller, $data['password'])
         );
+
+        $errors = $this->validator->validate($seller);
+
+        if (count($errors) > 0) {
+            $messages = [];
+            foreach ($errors as $error) {
+                $messages[$error->getPropertyPath()] = $error->getMessage();
+            }
+            return $this->json(['errors' => $messages], 422);
+        }
 
         $em->persist($seller);
         $em->flush();
