@@ -2,6 +2,7 @@
 
 namespace App\Controller\API\V1;
 
+use App\Bus\CommandBus;
 use App\Entity\Seller;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -23,7 +24,7 @@ class AuthController extends AbstractController
     //public function __construct(private ValidatorInterface $validator) {}
 
     public function __construct(
-        private MessageBusInterface $commandBus
+        private CommandBus $commandBus
     ) {}
 
     #[Route('/register', name: 'register', methods: ['POST'])]
@@ -74,17 +75,22 @@ class AuthController extends AbstractController
         #[MapRequestPayload] RegisterSellerRequest $request
     ): JsonResponse {
 
-        $this->commandBus->dispatch(new RegisterSellerCommand(
+        $result = $this->commandBus->dispatch(new RegisterSellerCommand(
             name:     $request->name,
             email:    $request->email,
             password: $request->password
         ));
 
+        // return $this->json(
+        //     (new RegisterSellerResponse(
+        //         message:   'Seller registered successfully'
+        //     ))->toArray(),
+        //     201
+        // );
+
         return $this->json(
-            (new RegisterSellerResponse(
-                message:   'Seller registered successfully'
-            ))->toArray(),
-            201
+            $result->result(),
+            $result->code()
         );
     }
 }
